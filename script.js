@@ -1,13 +1,22 @@
 "use strict";
 
-const Player = (sign) => {
-  this.sign = sign;
+const Player = (sign, name) => {
+    this.sign = sign;
+    this.name = name;
 
-  const getSign = () => {
-    return sign;
-  };
+    const getSign = () => {
+        return sign;
+    };
 
-  return { getSign };
+    const getName = () => {
+        return name;
+    }
+
+    const setName = (newName) => {
+        this.name = newName;
+    }
+
+    return { getSign, getName, setName };
 };
 
 const gameBoard = (() => {
@@ -36,8 +45,10 @@ const displayController = (() => {
     const fieldElements = document.querySelectorAll(".field");
     const messageElement = document.getElementById("message");
     const restartButton = document.getElementById("restart-button");
+    const player1Text = document.getElementById("player1");
+    const player2Text = document.getElementById("player2");
 
-    fieldElements.forEach((field) => 
+    fieldElements.forEach((field) =>
         field.addEventListener("click", (e) => {
             if (gameController.getIsOver() || e.target.textContent !== "") return;
             gameController.playRound(parseInt(e.target.dataset.index));
@@ -49,7 +60,16 @@ const displayController = (() => {
         gameBoard.reset();
         gameController.reset();
         updateGameboard();
-        setMessageElement("Platr X's turn");
+        setMessageElement("Player X's turn");
+    });
+
+    player1Text.addEventListener("change", (e)=>{
+        console.log(player1Text.value);
+    });
+
+    
+    player2Text.addEventListener("change", (e)=>{
+        console.log(player2Text.value);
     });
 
     const updateGameboard = () => {
@@ -62,7 +82,7 @@ const displayController = (() => {
         if (winner === "Draw") {
             setMessageElement("It's a draw!");
         } else {
-            setMessageElement(`Player ${winner} has won!`);
+            setMessageElement(`${winner} has won!`);
         }
     };
 
@@ -70,12 +90,16 @@ const displayController = (() => {
         messageElement.textContent = message;
     };
 
-    return { setResultMessage, setMessageElement };
+    const getPlayerNames = () => {
+        return [player1Text.textContent,player2Text.textContent];
+    };
+
+    return { setResultMessage, setMessageElement,getPlayerNames};
 })();
 
 const gameController = (() => {
-    const playerX = Player("X");
-    const playerO = Player("O");
+    const playerX = Player("X",displayController.getPlayerNames()[0]);
+    const playerO = Player("O", displayController.getPlayerNames()[1]);
     let round = 1;
     let isOver = false;
 
@@ -102,33 +126,33 @@ const gameController = (() => {
 
     const checkWinner = (fieldIndex) => {
         const winConditions = [
-          [0, 1, 2],
-          [3, 4, 5],
-          [6, 7, 8],
-          [0, 3, 6],
-          [1, 4, 7],
-          [2, 5, 8],
-          [0, 4, 8],
-          [2, 4, 6],
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6],
         ];
-    
+
         return winConditions
-          .filter((combination) => combination.includes(fieldIndex))
-          .some((possibleCombination) =>
-            possibleCombination.every(
-              (index) => gameBoard.getField(index) === getCurrentPlayerSign()
-            )
-          );
-      };
-    
-      const getIsOver = () => {
+            .filter((combination) => combination.includes(fieldIndex))
+            .some((possibleCombination) =>
+                possibleCombination.every(
+                    (index) => gameBoard.getField(index) === getCurrentPlayerSign()
+                )
+            );
+    };
+
+    const getIsOver = () => {
         return isOver;
-      };
-    
-      const reset = () => {
+    };
+
+    const reset = () => {
         round = 1;
         isOver = false;
-      };
-    
-      return { playRound, getIsOver, reset };
+    };
+
+    return { playRound, getIsOver, reset };
 })();
